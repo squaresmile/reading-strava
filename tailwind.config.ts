@@ -5,17 +5,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        page: "#000000",
-        panel: "#1f1f1f",
-        "panel-strong": "#242424",
-        muted: "#9c9ca3",
-        "muted-label": "#aaaab1",
+        page: "var(--color-page)",
+        panel: "var(--color-panel)",
+        "panel-strong": "var(--color-panel-strong)",
+        muted: "var(--color-muted)",
+        "muted-label": "var(--color-muted-label)",
+        fg: "var(--color-fg)",
         orange: "#ff711c",
-        "orange-dim": "#5b2208",
+        "orange-dim": "var(--color-orange-dim)",
         danger: "#dc2626",
       },
       fontFamily: {
-        display: ["Space Grotesk", "system-ui", "sans-serif"],
+        display: [
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
       },
       boxShadow: {
         "pause-ring": "inset 0 0 0 4px #292929",

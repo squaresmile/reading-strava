@@ -34,9 +34,11 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
 
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
+
     link.href = url;
     link.download = "reading-strava-session.png";
     link.click();
+
     URL.revokeObjectURL(url);
   }
 
@@ -61,32 +63,36 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
   }
 
   return (
-    <section className="flex min-h-[100svh] flex-col items-center px-[clamp(1rem,4vw,1.25rem)] pb-8 pt-[clamp(2rem,6svh,3.25rem)] [@media(max-height:740px)]:py-5">
+    <section className="flex min-h-[100dvh] flex-col items-center px-[clamp(1rem,4vw,1.25rem)] pb-[clamp(2rem,6svh,4rem)] pt-[clamp(2rem,6svh,3.25rem)] [@media(max-height:740px)]:pb-6 [@media(max-height:740px)]:pt-5">
       <div className="flex w-full flex-col gap-[clamp(2.2rem,6.8svh,3.55rem)] text-center [@media(max-height:740px)]:gap-6">
         <Metric label="Page(s)" value={stats.pagesRead} />
         <Metric label="Pace" value={formatTime(stats.pace)} suffix="/p" />
         <Metric label="Time" value={formatTime(stats.elapsed)} />
       </div>
+
       <BookOpen
-        className="mb-[clamp(3rem,8svh,5rem)] mt-auto h-[clamp(8rem,38vw,11rem)] w-[clamp(8rem,38vw,11rem)] text-[#ff5a0a] [@media(max-height:740px)]:mb-8"
+        className="mb-[clamp(2rem,5svh,3.5rem)] mt-auto h-[clamp(8rem,38vw,11rem)] w-[clamp(8rem,38vw,11rem)] text-[#ff5a0a] [@media(max-height:740px)]:mb-6"
         size={210}
         strokeWidth={1.8}
       />
-      <div className="flex w-full flex-col gap-[clamp(2rem,6svh,3rem)]">
+
+      <div className="flex w-full flex-col gap-[clamp(1.25rem,3.8svh,2rem)]">
         <button
           className="min-h-[clamp(4.75rem,13svh,6.25rem)] w-full cursor-pointer rounded-[1.15rem] border-0 bg-orange text-[clamp(1.25rem,5vw,1.75rem)] font-bold leading-none text-white"
           onClick={shareToInstagram}
         >
           Share to Instagram
         </button>
+
         <button
-          className="min-h-[clamp(4.75rem,13svh,6.25rem)] w-full cursor-pointer rounded-[1.15rem] border-0 bg-panel text-[clamp(1.25rem,5vw,1.75rem)] font-bold leading-none text-white"
+          className="min-h-[clamp(4.75rem,13svh,6.25rem)] w-full cursor-pointer rounded-[1.15rem] border-0 bg-panel text-[clamp(1.25rem,5vw,1.75rem)] font-bold leading-none text-fg"
           onClick={downloadImage}
         >
           Download Image
         </button>
+
         <button
-          className="self-center border-0 bg-transparent text-[clamp(1.05rem,4.3vw,1.35rem)] leading-none text-muted"
+          className="min-h-[clamp(4.75rem,13svh,6.25rem)] w-full cursor-pointer rounded-[1.15rem] border-0 bg-panel text-[clamp(1.25rem,5vw,1.75rem)] font-bold leading-none text-fg"
           onClick={onNewSession}
         >
           New Session

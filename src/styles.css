@@ -1,19 +1,44 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../tailwind.config.ts";
 
 @layer base {
   :root {
     color-scheme: dark;
+    --color-page: #000000;
+    --color-panel: #1f1f1f;
+    --color-panel-strong: #242424;
+    --color-muted: #9c9ca3;
+    --color-muted-label: #aaaab1;
+    --color-fg: #ffffff;
+    --color-orange-dim: #5b2208;
+  }
+
+  [data-theme="light"] {
+    color-scheme: light;
+    --color-page: #fafafa;
+    --color-panel: #ececef;
+    --color-panel-strong: #dededf;
+    --color-muted: #6b6b73;
+    --color-muted-label: #5a5a62;
+    --color-fg: #111111;
+    --color-orange-dim: #ffcfb0;
   }
 
   body {
     min-width: 320px;
-    min-height: 100vh;
+    min-height: 100svh;
     margin: 0;
-    background: #000;
+    overflow-x: clip;
+    background: var(--color-page);
+    font-family:
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      Helvetica,
+      Arial,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

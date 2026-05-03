@@ -19,7 +19,7 @@ export function PausedScreen({
         <p className="m-0 mb-5 text-[clamp(0.95rem,3.7vw,1.2rem)] uppercase tracking-[0.2em] text-orange">
           Paused
         </p>
-        <strong className="block text-[clamp(4.15rem,18vw,6.35rem)] font-extrabold leading-[0.9] tracking-normal text-white">
+        <strong className="block text-[clamp(4.15rem,18vw,6.35rem)] font-extrabold leading-[0.9] tracking-normal text-fg">
           {formatTime(elapsedSeconds)}
         </strong>
       </div>
@@ -31,13 +31,13 @@ export function PausedScreen({
           Continue
         </button>
         <button
-          className="min-h-[clamp(4.75rem,13svh,6.25rem)] w-full cursor-pointer rounded-[1.15rem] border-0 bg-panel text-[clamp(1.25rem,5vw,1.75rem)] font-bold leading-none text-white"
+          className="min-h-[clamp(4.75rem,13svh,6.25rem)] w-full cursor-pointer rounded-[1.15rem] border-0 bg-panel text-[clamp(1.25rem,5vw,1.75rem)] font-bold leading-none text-fg"
           onClick={onSave}
         >
           Save
         </button>
         <button
-          className="mt-[clamp(1.25rem,4svh,2rem)] self-center border-0 bg-transparent text-[clamp(1.05rem,4.3vw,1.35rem)] leading-none text-muted"
+          className="min-h-[clamp(4.75rem,13svh,6.25rem)] w-full cursor-pointer rounded-[1.15rem] border-0 bg-panel text-[clamp(1.25rem,5vw,1.75rem)] font-bold leading-none text-danger"
           onClick={onDiscard}
         >
           Discard

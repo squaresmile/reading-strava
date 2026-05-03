@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { Moon, Sun } from "lucide-react";
+
 import { DiscardDialog } from "./components/DiscardDialog";
 import { PausedScreen } from "./components/PausedScreen";
 import { ResultScreen } from "./components/ResultScreen";
@@ -9,9 +11,25 @@ import { TimingScreen } from "./components/TimingScreen";
 import type { SavedSession, Screen, SessionResult } from "./types";
 
 const STORAGE_KEY = "reading-tracker-session";
+const THEME_KEY = "reading-tracker-theme";
+
+type Theme = "dark" | "light";
 
 export function App() {
   const [screen, setScreen] = useState<Screen>("start");
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved =
+      typeof window === "undefined"
+        ? null
+        : (localStorage.getItem(THEME_KEY) as Theme | null);
+    if (saved === "light" || saved === "dark") return saved;
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: light)").matches
+    )
+      return "light";
+    return "dark";
+  });
   const [startingPage, setStartingPage] = useState("");
   const [startTimestamp, setStartTimestamp] = useState<number | null>(null);
   const [totalPausedMs, setTotalPausedMs] = useState(0);
@@ -29,6 +47,11 @@ export function App() {
       Math.floor((end - startTimestamp - totalPausedMs) / 1000),
     );
   }, [pauseTimestamp, screen, startTimestamp, totalPausedMs]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -129,8 +152,22 @@ export function App() {
   }
 
   return (
-    <main className="flex min-h-screen justify-center bg-page font-display text-white">
-      <div className="relative min-h-[100svh] w-full max-w-[430px]">
+    <main className="flex justify-center bg-page font-display text-fg">
+      <div className="relative w-full max-w-[430px]">
+        <button
+          type="button"
+          aria-label={
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
+          onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+          className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-fg/10 bg-panel text-muted transition-colors hover:text-fg"
+        >
+          {theme === "dark" ? (
+            <Sun className="h-5 w-5" strokeWidth={2} />
+          ) : (
+            <Moon className="h-5 w-5" strokeWidth={2} />
+          )}
+        </button>
         {screen === "start" && (
           <StartScreen
             startingPage={startingPage}
@@ -163,12 +200,11 @@ export function App() {
           <ResultScreen data={result} onNewSession={newSession} />
         )}
       </div>
-      {confirmDiscard && (
-        <DiscardDialog
-          onCancel={() => setConfirmDiscard(false)}
-          onConfirm={discard}
-        />
-      )}
+      <DiscardDialog
+        open={confirmDiscard}
+        onCancel={() => setConfirmDiscard(false)}
+        onConfirm={discard}
+      />
     </main>
   );
 }

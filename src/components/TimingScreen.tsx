@@ -1,5 +1,3 @@
-import { Pause } from "lucide-react";
-
 import { formatTime } from "../utils/time";
 
 type TimingScreenProps = {
@@ -14,16 +12,37 @@ export function TimingScreen({ elapsedSeconds, onPause }: TimingScreenProps) {
         <p className="m-0 mb-5 text-[clamp(0.95rem,3.7vw,1.2rem)] uppercase tracking-[0.2em] text-muted">
           Reading
         </p>
-        <strong className="block text-[clamp(4.15rem,18vw,6.4rem)] font-extrabold leading-[0.9] tracking-normal text-white">
+        <strong className="block text-[clamp(4.15rem,18vw,6.4rem)] font-extrabold leading-[0.9] tracking-normal text-fg">
           {formatTime(elapsedSeconds)}
         </strong>
       </div>
       <button
-        className="mt-[clamp(4.5rem,13svh,7rem)] inline-flex h-[clamp(6.75rem,28vw,8.25rem)] w-[clamp(6.75rem,28vw,8.25rem)] cursor-pointer items-center justify-center rounded-full border-0 bg-panel text-white shadow-pause-ring max-[520px]:[&_svg]:size-11 [@media(max-height:740px)]:mt-12"
+        className="mt-[clamp(4.5rem,13svh,7rem)] inline-flex h-[clamp(5.75rem,23vw,7rem)] w-[clamp(5.75rem,23vw,7rem)] cursor-pointer items-center justify-center rounded-full border border-orange/30 bg-panel text-fg shadow-[inset_0_0_0_1px_rgb(255_113_28_/_0.06),0_1.25rem_3.5rem_rgb(255_113_28_/_0.18)] transition duration-150 hover:border-orange hover:bg-panel-strong hover:text-orange hover:shadow-[inset_0_0_0_1px_rgb(255_113_28_/_0.4),0_0_2.5rem_rgb(255_113_28_/_0.55),0_1.25rem_3.5rem_rgb(255_113_28_/_0.35)] active:scale-95 [@media(max-height:740px)]:mt-12"
         aria-label="Pause reading"
         onClick={onPause}
       >
-        <Pause size={52} strokeWidth={4} fill="currentColor" />
+        <svg
+          className="h-[clamp(2.2rem,8vw,2.75rem)] w-[clamp(2.2rem,8vw,2.75rem)] text-fg"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+          <rect
+            width="12"
+            height="32"
+            x="10"
+            y="8"
+            rx="5"
+            fill="currentColor"
+          />
+          <rect
+            width="12"
+            height="32"
+            x="26"
+            y="8"
+            rx="5"
+            fill="currentColor"
+          />
+        </svg>
       </button>
     </section>
   );
