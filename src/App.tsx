@@ -1,0 +1,174 @@
+import { useCallback, useEffect, useState } from "react";
+
+import { DiscardDialog } from "./components/DiscardDialog";
+import { PausedScreen } from "./components/PausedScreen";
+import { ResultScreen } from "./components/ResultScreen";
+import { SavingScreen } from "./components/SavingScreen";
+import { StartScreen } from "./components/StartScreen";
+import { TimingScreen } from "./components/TimingScreen";
+import type { SavedSession, Screen, SessionResult } from "./types";
+
+const STORAGE_KEY = "reading-tracker-session";
+
+export function App() {
+  const [screen, setScreen] = useState<Screen>("start");
+  const [startingPage, setStartingPage] = useState("");
+  const [startTimestamp, setStartTimestamp] = useState<number | null>(null);
+  const [totalPausedMs, setTotalPausedMs] = useState(0);
+  const [pauseTimestamp, setPauseTimestamp] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [result, setResult] = useState<SessionResult | null>(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+
+  const elapsedNow = useCallback(() => {
+    if (!startTimestamp) return 0;
+    const end =
+      screen === "paused" && pauseTimestamp ? pauseTimestamp : Date.now();
+    return Math.max(
+      0,
+      Math.floor((end - startTimestamp - totalPausedMs) / 1000),
+    );
+  }, [pauseTimestamp, screen, startTimestamp, totalPausedMs]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved) as SavedSession;
+      setStartingPage(parsed.startingPage ?? "");
+      setStartTimestamp(parsed.startTimestamp ?? null);
+      setTotalPausedMs(parsed.totalPausedMs ?? 0);
+      setPauseTimestamp(
+        parsed.state === "timing"
+          ? Date.now()
+          : (parsed.pauseTimestamp ?? null),
+      );
+      if (parsed.state === "timing" || parsed.state === "paused")
+        setScreen("paused");
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (screen !== "timing" && screen !== "paused") return;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        state: screen,
+        startingPage,
+        startTimestamp,
+        totalPausedMs,
+        pauseTimestamp,
+      }),
+    );
+  }, [pauseTimestamp, screen, startingPage, startTimestamp, totalPausedMs]);
+
+  useEffect(() => {
+    if (screen === "timing") {
+      setElapsedSeconds(elapsedNow());
+      const timer = window.setInterval(
+        () => setElapsedSeconds(elapsedNow()),
+        1000,
+      );
+      return () => window.clearInterval(timer);
+    }
+    if (screen === "paused") setElapsedSeconds(elapsedNow());
+  }, [elapsedNow, screen]);
+
+  function startReading() {
+    if (startingPage === "" || Number.isNaN(Number(startingPage))) return;
+    setStartTimestamp(Date.now());
+    setTotalPausedMs(0);
+    setPauseTimestamp(null);
+    setElapsedSeconds(0);
+    setScreen("timing");
+  }
+
+  function pauseReading() {
+    setPauseTimestamp(Date.now());
+    setScreen("paused");
+  }
+
+  function continueReading() {
+    if (pauseTimestamp)
+      setTotalPausedMs((value) => value + Date.now() - pauseTimestamp);
+    setPauseTimestamp(null);
+    setScreen("timing");
+  }
+
+  function discard() {
+    setStartingPage("");
+    setStartTimestamp(null);
+    setTotalPausedMs(0);
+    setPauseTimestamp(null);
+    setResult(null);
+    setConfirmDiscard(false);
+    localStorage.removeItem(STORAGE_KEY);
+    setScreen("start");
+  }
+
+  function saveSession(endingPage: number) {
+    const elapsed = elapsedNow();
+    setResult({
+      startingPage: Number(startingPage),
+      endingPage,
+      elapsedSeconds: elapsed,
+    });
+    localStorage.removeItem(STORAGE_KEY);
+    setScreen("result");
+  }
+
+  function newSession() {
+    setStartingPage("");
+    setStartTimestamp(null);
+    setTotalPausedMs(0);
+    setPauseTimestamp(null);
+    setResult(null);
+    setScreen("start");
+  }
+
+  return (
+    <main className="flex min-h-screen justify-center bg-page font-display text-white">
+      <div className="relative min-h-[100svh] w-full max-w-[430px]">
+        {screen === "start" && (
+          <StartScreen
+            startingPage={startingPage}
+            setStartingPage={setStartingPage}
+            onStart={startReading}
+          />
+        )}
+        {screen === "timing" && (
+          <TimingScreen
+            elapsedSeconds={elapsedSeconds}
+            onPause={pauseReading}
+          />
+        )}
+        {screen === "paused" && (
+          <PausedScreen
+            elapsedSeconds={elapsedSeconds}
+            onContinue={continueReading}
+            onSave={() => setScreen("saving")}
+            onDiscard={() => setConfirmDiscard(true)}
+          />
+        )}
+        {screen === "saving" && (
+          <SavingScreen
+            startingPage={Number(startingPage)}
+            onBack={() => setScreen("paused")}
+            onSave={saveSession}
+          />
+        )}
+        {screen === "result" && result && (
+          <ResultScreen data={result} onNewSession={newSession} />
+        )}
+      </div>
+      {confirmDiscard && (
+        <DiscardDialog
+          onCancel={() => setConfirmDiscard(false)}
+          onConfirm={discard}
+        />
+      )}
+    </main>
+  );
+}
