@@ -12,17 +12,28 @@ type ResultScreenProps = {
   onNewSession: () => void;
 };
 
+function readingSpeedLabel(pace: number, pagesRead: number) {
+  if (pagesRead <= 0) return "📖 No Pages Logged";
+  if (pace <= 45) return "⚡ Page Sprinter";
+  if (pace <= 90) return "🚲 Cruising";
+  if (pace <= 180) return "🧠 Deep Focus";
+  return "🕯️ Slow Burn";
+}
+
 export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
   const pagesRead = Math.max(0, data.endingPage - data.startingPage);
   const pace = secondsPerPage(data.elapsedSeconds, pagesRead);
+  const speedLabel = readingSpeedLabel(pace, pagesRead);
 
   const stats = useMemo(
     () => ({
+      bookTitle: data.bookTitle,
       pagesRead,
       pace,
       elapsed: data.elapsedSeconds,
+      speedLabel,
     }),
-    [data.elapsedSeconds, pagesRead, pace],
+    [data.bookTitle, data.elapsedSeconds, pagesRead, pace, speedLabel],
   );
 
   function downloadBlob(blob: Blob) {
@@ -67,12 +78,25 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
 
   return (
     <section className="flex min-h-[100dvh] flex-col items-center px-[clamp(1rem,4vw,1.25rem)] pb-[clamp(2rem,6svh,4rem)] pt-[clamp(2rem,6svh,3.25rem)] [@media(max-height:740px)]:pb-6 [@media(max-height:740px)]:pt-5">
+      {stats.bookTitle && (
+        <header className="mb-[clamp(1.5rem,4svh,2.4rem)] w-full text-center">
+          <p className="m-0 truncate text-[clamp(1.2rem,4.8vw,1.55rem)] font-extrabold leading-tight text-fg">
+            {stats.bookTitle}
+          </p>
+        </header>
+      )}
+
       <div className="flex w-full flex-col gap-[clamp(2.2rem,6.8svh,3.55rem)] text-center [@media(max-height:740px)]:gap-6">
         <Metric
           label={stats.pagesRead > 1 ? "Pages" : "Page"}
           value={stats.pagesRead}
         />
-        <Metric label="Pace" value={formatTime(stats.pace)} suffix="/p" />
+        <div>
+          <Metric label="Pace" value={formatTime(stats.pace)} suffix="/p" />
+          <p className="m-0 mt-4 text-[clamp(0.95rem,3.7vw,1.1rem)] font-bold uppercase leading-none tracking-[0.18em] text-orange">
+            {stats.speedLabel}
+          </p>
+        </div>
         <Metric label="Time" value={formatTime(stats.elapsed)} />
       </div>
 

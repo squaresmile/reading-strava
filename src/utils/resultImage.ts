@@ -4,7 +4,8 @@ import { formatTime } from "./time";
 const EXPORT_WIDTH = 1080;
 const EXPORT_HEIGHT = 1920;
 const ART_SCALE = 1.2;
-const ART_OFFSET_Y = 120;
+const ART_OFFSET_Y = 40;
+const BOOK_OFFSET_Y = -50;
 const FONT_FAMILY =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
@@ -14,6 +15,7 @@ function pageLabel(pagesRead: number) {
 
 function drawBook(ctx: CanvasRenderingContext2D) {
   ctx.save();
+  ctx.translate(0, BOOK_OFFSET_Y);
   ctx.strokeStyle = "#ff6d1a";
   ctx.lineWidth = 16;
   ctx.lineCap = "round";
@@ -48,6 +50,20 @@ function setFont(ctx: CanvasRenderingContext2D, size: number) {
   ctx.font = `800 ${size}px ${FONT_FAMILY}`;
 }
 
+function fitText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+) {
+  if (ctx.measureText(text).width <= maxWidth) return text;
+
+  let fitted = text;
+  while (fitted.length > 1 && ctx.measureText(`${fitted}...`).width > maxWidth)
+    fitted = fitted.slice(0, -1);
+
+  return `${fitted}...`;
+}
+
 function drawOutlinedText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -77,20 +93,26 @@ export function createResultImageBlob(stats: ResultStats) {
   ctx.scale(ART_SCALE, ART_SCALE);
 
   ctx.textAlign = "center";
+  if (stats.bookTitle) {
+    setFont(ctx, 38);
+    drawOutlinedText(ctx, fitText(ctx, stats.bookTitle, 660), 450, 40, 7);
+  }
   setFont(ctx, 42);
   drawOutlinedText(ctx, pageLabel(stats.pagesRead), 450, 120, 8);
   setFont(ctx, 136);
   drawOutlinedText(ctx, String(stats.pagesRead), 450, 250, 12);
   setFont(ctx, 42);
-  drawOutlinedText(ctx, "PACE", 450, 400, 8);
+  drawOutlinedText(ctx, "PACE", 450, 365, 8);
   setFont(ctx, 132);
-  drawOutlinedText(ctx, formatTime(stats.pace), 425, 540, 12);
-  setFont(ctx, 52);
-  drawOutlinedText(ctx, "/p", 660, 540, 8);
+  drawOutlinedText(ctx, formatTime(stats.pace), 450, 505, 12);
+  setFont(ctx, 70);
+  drawOutlinedText(ctx, "/p", 675, 505, 9);
+  setFont(ctx, 36);
+  drawOutlinedText(ctx, stats.speedLabel.toUpperCase(), 450, 575, 7);
   setFont(ctx, 42);
-  drawOutlinedText(ctx, "TIME", 450, 690, 8);
+  drawOutlinedText(ctx, "TIME", 450, 720, 8);
   setFont(ctx, 136);
-  drawOutlinedText(ctx, formatTime(stats.elapsed), 450, 850, 12);
+  drawOutlinedText(ctx, formatTime(stats.elapsed), 450, 880, 12);
   drawBook(ctx);
   ctx.restore();
 

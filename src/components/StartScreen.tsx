@@ -3,9 +3,11 @@ import type { SessionMode } from "../types";
 const COUNTDOWN_PRESETS = [15, 30, 45, 60];
 
 type StartScreenProps = {
+  bookTitle: string;
   countdownMinutes: number;
   startingPage: string;
   sessionMode: SessionMode;
+  setBookTitle: (value: string) => void;
   setCountdownMinutes: (value: number) => void;
   setStartingPage: (value: string) => void;
   setSessionMode: (value: SessionMode) => void;
@@ -13,9 +15,11 @@ type StartScreenProps = {
 };
 
 export function StartScreen({
+  bookTitle,
   countdownMinutes,
   startingPage,
   sessionMode,
+  setBookTitle,
   setCountdownMinutes,
   setStartingPage,
   setSessionMode,
@@ -42,6 +46,20 @@ export function StartScreen({
         </p>
       </header>
       <div className="mt-[clamp(1.75rem,5svh,3rem)] flex flex-col gap-[clamp(1.35rem,4svh,2.5rem)]">
+        <label className="flex flex-col gap-4">
+          <span className="block min-h-[1.75rem] text-center text-[clamp(0.95rem,3.8vw,1.25rem)] uppercase leading-none tracking-[0.2em] text-muted-label">
+            Book Title
+          </span>
+          <input
+            className="h-[clamp(4.25rem,11svh,5.25rem)] w-full appearance-none rounded-[1.35rem] border-[3px] border-fg/5 bg-panel px-5 text-center text-[clamp(1.35rem,5.4vw,1.8rem)] font-extrabold text-fg outline-none transition-colors duration-150 placeholder:text-fg/30 focus:border-orange"
+            type="text"
+            value={bookTitle}
+            onChange={(event) => setBookTitle(event.target.value)}
+            placeholder="Optional"
+            maxLength={48}
+          />
+        </label>
+
         <div className="flex flex-col gap-5 pt-[0.5rem]">
           <label
             className="block min-h-[1.75rem] text-center text-[clamp(0.95rem,3.8vw,1.25rem)] uppercase leading-none tracking-[0.2em] text-muted-label"

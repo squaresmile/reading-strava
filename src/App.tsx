@@ -30,6 +30,7 @@ export function App() {
       return "light";
     return "dark";
   });
+  const [bookTitle, setBookTitle] = useState("");
   const [startingPage, setStartingPage] = useState("");
   const [sessionMode, setSessionMode] = useState<SessionMode>("stopwatch");
   const [countdownMinutes, setCountdownMinutes] = useState(15);
@@ -60,6 +61,7 @@ export function App() {
     if (!saved) return;
     try {
       const parsed = JSON.parse(saved) as SavedSession;
+      setBookTitle(parsed.bookTitle ?? "");
       setStartingPage(parsed.startingPage ?? "");
       setSessionMode(
         parsed.sessionMode === "countdown" ? "countdown" : "stopwatch",
@@ -85,6 +87,7 @@ export function App() {
       STORAGE_KEY,
       JSON.stringify({
         state: screen,
+        bookTitle,
         startingPage,
         sessionMode,
         countdownMinutes,
@@ -94,6 +97,7 @@ export function App() {
       }),
     );
   }, [
+    bookTitle,
     countdownMinutes,
     pauseTimestamp,
     screen,
@@ -145,6 +149,7 @@ export function App() {
   }
 
   function discard() {
+    setBookTitle("");
     setStartingPage("");
     setStartTimestamp(null);
     setTotalPausedMs(0);
@@ -158,6 +163,7 @@ export function App() {
   function saveSession(endingPage: number) {
     const elapsed = elapsedNow();
     setResult({
+      bookTitle: bookTitle.trim() || undefined,
       startingPage: Number(startingPage),
       endingPage,
       elapsedSeconds: elapsed,
@@ -167,6 +173,7 @@ export function App() {
   }
 
   function newSession() {
+    setBookTitle("");
     setStartingPage("");
     setStartTimestamp(null);
     setTotalPausedMs(0);
@@ -194,9 +201,11 @@ export function App() {
         </button>
         {screen === "start" && (
           <StartScreen
+            bookTitle={bookTitle}
             countdownMinutes={countdownMinutes}
             startingPage={startingPage}
             sessionMode={sessionMode}
+            setBookTitle={setBookTitle}
             setCountdownMinutes={setCountdownMinutes}
             setStartingPage={setStartingPage}
             setSessionMode={setSessionMode}
