@@ -13,7 +13,7 @@ type ResultScreenProps = {
 };
 
 function readingSpeedLabel(pace: number, pagesRead: number) {
-  if (pagesRead <= 0) return "📖 No Pages Logged";
+  if (pagesRead <= 0) return "📖 No Page Logged";
   if (pace <= 45) return "⚡ Page Sprinter";
   if (pace <= 90) return "🚲 Cruising";
   if (pace <= 180) return "🧠 Deep Focus";
