@@ -1,6 +1,7 @@
 import { formatTime } from "../utils/time";
 
 type PausedScreenProps = {
+  countdownSeconds: number | null;
   elapsedSeconds: number;
   onContinue: () => void;
   onSave: () => void;
@@ -8,11 +9,17 @@ type PausedScreenProps = {
 };
 
 export function PausedScreen({
+  countdownSeconds,
   elapsedSeconds,
   onContinue,
   onSave,
   onDiscard,
 }: PausedScreenProps) {
+  const remainingSeconds =
+    countdownSeconds === null
+      ? elapsedSeconds
+      : Math.max(0, countdownSeconds - elapsedSeconds);
+
   return (
     <section className="flex min-h-[100svh] flex-col px-[clamp(1rem,4vw,1.25rem)] pb-8 pt-[clamp(4.25rem,11svh,6.5rem)] [@media(max-height:740px)]:py-5 [@media(max-height:740px)]:pt-[3.25rem]">
       <div className="text-center">
@@ -20,8 +27,13 @@ export function PausedScreen({
           Paused
         </p>
         <strong className="block text-[clamp(4.15rem,18vw,6.35rem)] font-extrabold leading-[0.9] tracking-normal text-fg">
-          {formatTime(elapsedSeconds)}
+          {formatTime(remainingSeconds)}
         </strong>
+        {countdownSeconds !== null && (
+          <p className="m-0 mt-5 text-[clamp(1rem,4vw,1.2rem)] font-bold leading-none text-muted">
+            remaining
+          </p>
+        )}
       </div>
       <div className="mt-[clamp(3.75rem,10svh,5.75rem)] flex flex-col gap-[clamp(1rem,3svh,1.35rem)] [@media(max-height:740px)]:mt-11">
         <button

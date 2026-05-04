@@ -8,7 +8,7 @@ import { ResultScreen } from "./components/ResultScreen";
 import { SavingScreen } from "./components/SavingScreen";
 import { StartScreen } from "./components/StartScreen";
 import { TimingScreen } from "./components/TimingScreen";
-import type { SavedSession, Screen, SessionResult } from "./types";
+import type { SavedSession, Screen, SessionMode, SessionResult } from "./types";
 
 const STORAGE_KEY = "reading-tracker-session";
 const THEME_KEY = "reading-tracker-theme";
@@ -31,6 +31,8 @@ export function App() {
     return "dark";
   });
   const [startingPage, setStartingPage] = useState("");
+  const [sessionMode, setSessionMode] = useState<SessionMode>("stopwatch");
+  const [countdownMinutes, setCountdownMinutes] = useState(15);
   const [startTimestamp, setStartTimestamp] = useState<number | null>(null);
   const [totalPausedMs, setTotalPausedMs] = useState(0);
   const [pauseTimestamp, setPauseTimestamp] = useState<number | null>(null);
@@ -59,6 +61,10 @@ export function App() {
     try {
       const parsed = JSON.parse(saved) as SavedSession;
       setStartingPage(parsed.startingPage ?? "");
+      setSessionMode(
+        parsed.sessionMode === "countdown" ? "countdown" : "stopwatch",
+      );
+      setCountdownMinutes(parsed.countdownMinutes ?? 15);
       setStartTimestamp(parsed.startTimestamp ?? null);
       setTotalPausedMs(parsed.totalPausedMs ?? 0);
       setPauseTimestamp(
@@ -80,12 +86,22 @@ export function App() {
       JSON.stringify({
         state: screen,
         startingPage,
+        sessionMode,
+        countdownMinutes,
         startTimestamp,
         totalPausedMs,
         pauseTimestamp,
       }),
     );
-  }, [pauseTimestamp, screen, startingPage, startTimestamp, totalPausedMs]);
+  }, [
+    countdownMinutes,
+    pauseTimestamp,
+    screen,
+    sessionMode,
+    startingPage,
+    startTimestamp,
+    totalPausedMs,
+  ]);
 
   useEffect(() => {
     if (screen === "timing") {
@@ -98,6 +114,14 @@ export function App() {
     }
     if (screen === "paused") setElapsedSeconds(elapsedNow());
   }, [elapsedNow, screen]);
+
+  useEffect(() => {
+    if (screen !== "timing" || sessionMode !== "countdown") return;
+    if (elapsedSeconds < countdownMinutes * 60) return;
+
+    setPauseTimestamp(Date.now());
+    setScreen("paused");
+  }, [countdownMinutes, elapsedSeconds, screen, sessionMode]);
 
   function startReading() {
     if (startingPage === "" || Number.isNaN(Number(startingPage))) return;
@@ -170,19 +194,29 @@ export function App() {
         </button>
         {screen === "start" && (
           <StartScreen
+            countdownMinutes={countdownMinutes}
             startingPage={startingPage}
+            sessionMode={sessionMode}
+            setCountdownMinutes={setCountdownMinutes}
             setStartingPage={setStartingPage}
+            setSessionMode={setSessionMode}
             onStart={startReading}
           />
         )}
         {screen === "timing" && (
           <TimingScreen
+            countdownSeconds={
+              sessionMode === "countdown" ? countdownMinutes * 60 : null
+            }
             elapsedSeconds={elapsedSeconds}
             onPause={pauseReading}
           />
         )}
         {screen === "paused" && (
           <PausedScreen
+            countdownSeconds={
+              sessionMode === "countdown" ? countdownMinutes * 60 : null
+            }
             elapsedSeconds={elapsedSeconds}
             onContinue={continueReading}
             onSave={() => setScreen("saving")}
