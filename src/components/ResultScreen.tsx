@@ -10,6 +10,7 @@ import { Metric } from "./Metric";
 type ResultScreenProps = {
   data: SessionResult;
   onNewSession: () => void;
+  onBookTitleChange: (value: string) => void;
 };
 
 function readingSpeedLabel(pace: number, pagesRead: number) {
@@ -20,7 +21,11 @@ function readingSpeedLabel(pace: number, pagesRead: number) {
   return "🕯️ Slow Burn";
 }
 
-export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
+export function ResultScreen({
+  data,
+  onNewSession,
+  onBookTitleChange,
+}: ResultScreenProps) {
   const pagesRead = Math.max(0, data.endingPage - data.startingPage);
   const pace = secondsPerPage(data.elapsedSeconds, pagesRead);
   const speedLabel = readingSpeedLabel(pace, pagesRead);
@@ -78,13 +83,17 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
 
   return (
     <section className="flex min-h-[100dvh] flex-col items-center px-[clamp(1rem,4vw,1.25rem)] pb-[clamp(2rem,6svh,4rem)] pt-[clamp(2rem,6svh,3.25rem)] [@media(max-height:740px)]:pb-6 [@media(max-height:740px)]:pt-5">
-      {stats.bookTitle && (
-        <header className="mb-[clamp(1.5rem,4svh,2.4rem)] w-full text-center">
-          <p className="m-0 truncate text-[clamp(1.2rem,4.8vw,1.55rem)] font-extrabold leading-tight text-fg">
-            {stats.bookTitle}
-          </p>
-        </header>
-      )}
+      <header className="mb-[clamp(1.5rem,4svh,2.4rem)] w-full text-center">
+        <input
+          className="m-0 w-full appearance-none truncate border-0 border-b-2 border-transparent bg-transparent text-center text-[clamp(1.2rem,4.8vw,1.55rem)] font-extrabold leading-tight text-fg outline-none transition-colors placeholder:font-bold placeholder:text-muted-label focus:border-orange"
+          type="text"
+          value={data.bookTitle ?? ""}
+          onChange={(event) => onBookTitleChange(event.target.value)}
+          placeholder="Add book title"
+          maxLength={48}
+          aria-label="Book title"
+        />
+      </header>
 
       <div className="flex w-full flex-col gap-[clamp(2.2rem,6.8svh,3.55rem)] text-center [@media(max-height:740px)]:gap-6">
         <Metric

@@ -240,7 +240,15 @@ export function App() {
           />
         )}
         {screen === "result" && result && (
-          <ResultScreen data={result} onNewSession={newSession} />
+          <ResultScreen
+            data={result}
+            onNewSession={newSession}
+            onBookTitleChange={(value) =>
+              setResult((prev) =>
+                prev ? { ...prev, bookTitle: value || undefined } : prev,
+              )
+            }
+          />
         )}
       </div>
       <DiscardDialog
