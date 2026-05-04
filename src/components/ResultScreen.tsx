@@ -3,10 +3,7 @@ import { useMemo } from "react";
 import { BookOpen } from "lucide-react";
 
 import type { SessionResult } from "../types";
-import {
-  copyBlobToClipboard,
-  createResultImageBlob,
-} from "../utils/resultImage";
+import { createResultImageBlob } from "../utils/resultImage";
 import { formatTime, secondsPerPage } from "../utils/time";
 import { Metric } from "./Metric";
 
@@ -42,7 +39,7 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
     URL.revokeObjectURL(url);
   }
 
-  async function shareToInstagram() {
+  async function shareImage() {
     const blob = await createResultImageBlob(stats);
     if (!blob) return;
 
@@ -50,22 +47,25 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
       type: "image/png",
     });
 
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        text: "My Reading Strava session",
-        title: "Reading Strava",
-      });
+    if (!navigator.share || !navigator.canShare?.({ files: [file] })) {
+      window.alert("Native sharing is not available in this browser.");
       return;
     }
 
-    await copyBlobToClipboard(blob);
+    await navigator.share({
+      files: [file],
+      text: "My Reading Strava session",
+      title: "Reading Strava",
+    });
   }
 
   return (
     <section className="flex min-h-[100dvh] flex-col items-center px-[clamp(1rem,4vw,1.25rem)] pb-[clamp(2rem,6svh,4rem)] pt-[clamp(2rem,6svh,3.25rem)] [@media(max-height:740px)]:pb-6 [@media(max-height:740px)]:pt-5">
       <div className="flex w-full flex-col gap-[clamp(2.2rem,6.8svh,3.55rem)] text-center [@media(max-height:740px)]:gap-6">
-        <Metric label="Page(s)" value={stats.pagesRead} />
+        <Metric
+          label={stats.pagesRead > 1 ? "Pages" : "Page"}
+          value={stats.pagesRead}
+        />
         <Metric label="Pace" value={formatTime(stats.pace)} suffix="/p" />
         <Metric label="Time" value={formatTime(stats.elapsed)} />
       </div>
@@ -79,9 +79,9 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
       <div className="flex w-full flex-col gap-[clamp(1.25rem,3.8svh,2rem)]">
         <button
           className="min-h-[clamp(4.75rem,13svh,6.25rem)] w-full cursor-pointer rounded-[1.15rem] border-0 bg-orange text-[clamp(1.25rem,5vw,1.75rem)] font-bold leading-none text-white"
-          onClick={shareToInstagram}
+          onClick={shareImage}
         >
-          Share to Instagram
+          Share Image
         </button>
 
         <button
