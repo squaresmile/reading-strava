@@ -25,18 +25,24 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
     [data.elapsedSeconds, pagesRead, pace],
   );
 
-  async function downloadImage() {
-    const blob = await createResultImageBlob(stats);
-    if (!blob) return;
-
+  function downloadBlob(blob: Blob) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
     link.href = url;
     link.download = "reading-strava-session.png";
+    document.body.append(link);
     link.click();
+    link.remove();
 
     URL.revokeObjectURL(url);
+  }
+
+  async function downloadImage() {
+    const blob = await createResultImageBlob(stats);
+    if (!blob) return;
+
+    downloadBlob(blob);
   }
 
   async function shareImage() {
@@ -48,7 +54,7 @@ export function ResultScreen({ data, onNewSession }: ResultScreenProps) {
     });
 
     if (!navigator.share || !navigator.canShare?.({ files: [file] })) {
-      window.alert("Native sharing is not available in this browser.");
+      downloadBlob(blob);
       return;
     }
 
