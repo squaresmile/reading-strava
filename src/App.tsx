@@ -47,13 +47,12 @@ export function App() {
 
   const elapsedNow = useCallback(() => {
     if (!startTimestamp) return 0;
-    const end =
-      screen === "paused" && pauseTimestamp ? pauseTimestamp : Date.now();
+    const end = pauseTimestamp ?? Date.now();
     return Math.max(
       0,
       Math.floor((end - startTimestamp - totalPausedMs) / 1000),
     );
-  }, [pauseTimestamp, screen, startTimestamp, totalPausedMs]);
+  }, [pauseTimestamp, startTimestamp, totalPausedMs]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -158,6 +157,7 @@ export function App() {
     setStartTimestamp(null);
     setTotalPausedMs(0);
     setPauseTimestamp(null);
+    setElapsedSeconds(0);
     setResult(null);
     setConfirmDiscard(false);
     localStorage.removeItem(STORAGE_KEY);
@@ -182,7 +182,9 @@ export function App() {
     setStartTimestamp(null);
     setTotalPausedMs(0);
     setPauseTimestamp(null);
+    setElapsedSeconds(0);
     setResult(null);
+    localStorage.removeItem(STORAGE_KEY);
     setScreen("start");
   }
 
