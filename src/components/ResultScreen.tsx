@@ -6,6 +6,9 @@ import type { SessionResult } from "../types";
 import { createResultImageBlob } from "../utils/resultImage";
 import { formatTime, secondsPerPage } from "../utils/time";
 import { Metric } from "./Metric";
+import { TimeDisplay } from "./TimeDisplay";
+
+const RESULT_VALUE_SIZE = "text-[clamp(3.35rem,15vw,5.35rem)]";
 
 type ResultScreenProps = {
   data: SessionResult;
@@ -99,14 +102,24 @@ export function ResultScreen({
         <Metric
           label={stats.pagesRead > 1 ? "Pages" : "Page"}
           value={stats.pagesRead}
+          valueClassName={RESULT_VALUE_SIZE}
         />
         <div>
-          <Metric label="Pace" value={formatTime(stats.pace)} suffix="/p" />
+          <Metric label="Pace">
+            <strong className="block whitespace-nowrap text-[clamp(2.7rem,12vw,4.05rem)] font-extrabold leading-none tracking-normal text-fg">
+              {formatTime(stats.pace)}/p
+            </strong>
+          </Metric>
           <p className="m-0 mt-4 text-[clamp(0.95rem,3.7vw,1.1rem)] font-bold uppercase leading-none tracking-[0.18em] text-orange">
             {stats.speedLabel}
           </p>
         </div>
-        <Metric label="Time" value={formatTime(stats.elapsed)} />
+        <Metric label="Time">
+          <TimeDisplay
+            seconds={stats.elapsed}
+            className={`${RESULT_VALUE_SIZE} font-extrabold leading-[0.9] tracking-normal text-fg`}
+          />
+        </Metric>
       </div>
 
       <BookOpen

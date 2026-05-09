@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Moon, Sun } from "lucide-react";
 
+import { DebugResultImageScreen } from "./components/DebugResultImageScreen";
 import { DiscardDialog } from "./components/DiscardDialog";
 import { PausedScreen } from "./components/PausedScreen";
 import { ResultScreen } from "./components/ResultScreen";
@@ -16,6 +17,9 @@ const THEME_KEY = "reading-tracker-theme";
 type Theme = "dark" | "light";
 
 export function App() {
+  if (window.location.pathname === "/debug/result-image")
+    return <DebugResultImageScreen />;
+
   const [screen, setScreen] = useState<Screen>("start");
   const [theme, setTheme] = useState<Theme>(() => {
     const saved =

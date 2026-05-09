@@ -1,11 +1,22 @@
 import type { ResultStats } from "../types";
-import { formatTime } from "./time";
 
 const EXPORT_WIDTH = 1080;
 const EXPORT_HEIGHT = 1920;
 const ART_SCALE = 1.2;
 const ART_OFFSET_Y = 40;
-const BOOK_OFFSET_Y = -50;
+const BOOK_Y = 950;
+const PACE_SUFFIX_GAP = 0;
+const SECTION_TITLE_FONT_SIZE = 42;
+const PAGE_VALUE_FONT_SIZE = 124;
+const PACE_VALUE_FONT_SIZE = 116;
+const TIME_VALUE_FONT_SIZE = 124;
+const PAGE_TITLE_Y = 120;
+const PAGE_VALUE_Y = 240;
+const PACE_TITLE_Y = 345;
+const PACE_VALUE_Y = 465;
+const SPEED_LABEL_Y = 530;
+const TIME_TITLE_Y = 645;
+const TIME_VALUE_Y = 765;
 const FONT_FAMILY =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
@@ -13,34 +24,33 @@ function pageLabel(pagesRead: number) {
   return pagesRead > 1 ? "PAGES" : "PAGE";
 }
 
+function exportTimeParts(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return {
+    minutes: String(minutes).padStart(2, "0"),
+    seconds: String(seconds).padStart(2, "0"),
+  };
+}
+
 function drawBook(ctx: CanvasRenderingContext2D) {
   ctx.save();
-  ctx.translate(0, BOOK_OFFSET_Y);
+  ctx.translate(0, BOOK_Y);
   ctx.strokeStyle = "#ff6d1a";
   ctx.lineWidth = 16;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
   ctx.beginPath();
-  ctx.moveTo(450, 1060);
-  ctx.bezierCurveTo(395, 1015, 335, 1000, 280, 1026);
-  ctx.lineTo(280, 1210);
-  ctx.bezierCurveTo(335, 1184, 395, 1199, 450, 1244);
-  ctx.bezierCurveTo(505, 1199, 565, 1184, 620, 1210);
-  ctx.lineTo(620, 1026);
-  ctx.bezierCurveTo(565, 1000, 505, 1015, 450, 1060);
-  ctx.lineTo(450, 1244);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(325, 1070);
-  ctx.bezierCurveTo(365, 1060, 405, 1075, 430, 1100);
-  ctx.moveTo(325, 1128);
-  ctx.bezierCurveTo(365, 1118, 405, 1132, 430, 1156);
-  ctx.moveTo(575, 1070);
-  ctx.bezierCurveTo(535, 1060, 495, 1075, 470, 1100);
-  ctx.moveTo(575, 1128);
-  ctx.bezierCurveTo(535, 1118, 495, 1132, 470, 1156);
+  ctx.moveTo(450, 0);
+  ctx.bezierCurveTo(395, -45, 335, -60, 280, -34);
+  ctx.lineTo(280, 150);
+  ctx.bezierCurveTo(335, 124, 395, 139, 450, 184);
+  ctx.bezierCurveTo(505, 139, 565, 124, 620, 150);
+  ctx.lineTo(620, -34);
+  ctx.bezierCurveTo(565, -60, 505, -45, 450, 0);
+  ctx.lineTo(450, 184);
   ctx.stroke();
 
   ctx.restore();
@@ -64,29 +74,72 @@ function fitText(
   return `${fitted}...`;
 }
 
-function drawOutlinedText(
+function drawExportText(
   ctx: CanvasRenderingContext2D,
   text: string,
   x: number,
   y: number,
-  strokeWidth: number,
 ) {
   ctx.save();
-  ctx.lineJoin = "round";
-  ctx.strokeStyle = "#000";
-  ctx.lineWidth = strokeWidth;
-  ctx.strokeText(text, x, y);
   ctx.fillStyle = "#fff";
   ctx.fillText(text, x, y);
   ctx.restore();
 }
 
-export function createResultImageBlob(stats: ResultStats) {
+function drawExportDot(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+}
+
+function drawExportTime(
+  ctx: CanvasRenderingContext2D,
+  totalSeconds: number,
+  x: number,
+  y: number,
+  fontSize: number,
+) {
+  const { minutes, seconds } = exportTimeParts(totalSeconds);
+  const digitColumnWidth = ctx.measureText("00").width;
+  const separatorWidth = fontSize * 0.2;
+  const totalWidth = digitColumnWidth * 2 + separatorWidth;
+  const left = x - totalWidth / 2;
+  const separatorX = left + digitColumnWidth + separatorWidth / 2;
+  const secondsX = left + digitColumnWidth + separatorWidth;
+  const dotRadius = (fontSize * 0.11) / 2;
+  const dotDistance = fontSize * 0.31;
+  const metrics = ctx.measureText("00");
+  const centerY =
+    y +
+    ((metrics.actualBoundingBoxDescent ?? 0) -
+      metrics.actualBoundingBoxAscent) /
+      2;
+  const dotCenterY = centerY;
+
+  ctx.save();
+  ctx.textAlign = "right";
+  drawExportText(ctx, minutes, left + digitColumnWidth, y);
+  ctx.textAlign = "left";
+  drawExportText(ctx, seconds, secondsX, y);
+  drawExportDot(ctx, separatorX, dotCenterY - dotDistance / 2, dotRadius);
+  drawExportDot(ctx, separatorX, dotCenterY + dotDistance / 2, dotRadius);
+  ctx.restore();
+
+  return secondsX + ctx.measureText(seconds).width;
+}
+
+export function createResultImageCanvas(stats: ResultStats) {
   const canvas = document.createElement("canvas");
   canvas.width = EXPORT_WIDTH;
   canvas.height = EXPORT_HEIGHT;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return Promise.resolve(null);
+  if (!ctx) return null;
 
   ctx.save();
   ctx.translate(0, ART_OFFSET_Y);
@@ -95,26 +148,41 @@ export function createResultImageBlob(stats: ResultStats) {
   ctx.textAlign = "center";
   if (stats.bookTitle) {
     setFont(ctx, 38);
-    drawOutlinedText(ctx, fitText(ctx, stats.bookTitle, 660), 450, 40, 7);
+    drawExportText(ctx, fitText(ctx, stats.bookTitle, 660), 450, 40);
   }
-  setFont(ctx, 42);
-  drawOutlinedText(ctx, pageLabel(stats.pagesRead), 450, 120, 8);
-  setFont(ctx, 136);
-  drawOutlinedText(ctx, String(stats.pagesRead), 450, 250, 12);
-  setFont(ctx, 42);
-  drawOutlinedText(ctx, "PACE", 450, 365, 8);
-  setFont(ctx, 132);
-  drawOutlinedText(ctx, formatTime(stats.pace), 450, 505, 12);
-  setFont(ctx, 70);
-  drawOutlinedText(ctx, "/p", 675, 505, 9);
+  setFont(ctx, SECTION_TITLE_FONT_SIZE);
+  drawExportText(ctx, pageLabel(stats.pagesRead), 450, PAGE_TITLE_Y);
+  setFont(ctx, PAGE_VALUE_FONT_SIZE);
+  drawExportText(ctx, String(stats.pagesRead), 450, PAGE_VALUE_Y);
+  setFont(ctx, SECTION_TITLE_FONT_SIZE);
+  drawExportText(ctx, "PACE", 450, PACE_TITLE_Y);
+  setFont(ctx, PACE_VALUE_FONT_SIZE);
+  const paceRightEdge = drawExportTime(
+    ctx,
+    stats.pace,
+    450,
+    PACE_VALUE_Y,
+    PACE_VALUE_FONT_SIZE,
+  );
+  setFont(ctx, PACE_VALUE_FONT_SIZE);
+  ctx.textAlign = "left";
+  drawExportText(ctx, "/p", paceRightEdge + PACE_SUFFIX_GAP, PACE_VALUE_Y);
+  ctx.textAlign = "center";
   setFont(ctx, 36);
-  drawOutlinedText(ctx, stats.speedLabel.toUpperCase(), 450, 575, 7);
-  setFont(ctx, 42);
-  drawOutlinedText(ctx, "TIME", 450, 720, 8);
-  setFont(ctx, 136);
-  drawOutlinedText(ctx, formatTime(stats.elapsed), 450, 880, 12);
+  drawExportText(ctx, stats.speedLabel.toUpperCase(), 450, SPEED_LABEL_Y);
+  setFont(ctx, SECTION_TITLE_FONT_SIZE);
+  drawExportText(ctx, "TIME", 450, TIME_TITLE_Y);
+  setFont(ctx, TIME_VALUE_FONT_SIZE);
+  drawExportTime(ctx, stats.elapsed, 450, TIME_VALUE_Y, TIME_VALUE_FONT_SIZE);
   drawBook(ctx);
   ctx.restore();
+
+  return canvas;
+}
+
+export function createResultImageBlob(stats: ResultStats) {
+  const canvas = createResultImageCanvas(stats);
+  if (!canvas) return Promise.resolve(null);
 
   return new Promise<Blob | null>((resolve) =>
     canvas.toBlob(resolve, "image/png"),

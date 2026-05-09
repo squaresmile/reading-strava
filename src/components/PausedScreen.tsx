@@ -1,4 +1,4 @@
-import { formatTime } from "../utils/time";
+import { TimeDisplay } from "./TimeDisplay";
 
 type PausedScreenProps = {
   countdownSeconds: number | null;
@@ -26,9 +26,10 @@ export function PausedScreen({
         <p className="m-0 mb-5 text-[clamp(0.95rem,3.7vw,1.2rem)] uppercase tracking-[0.2em] text-orange">
           Paused
         </p>
-        <strong className="block text-[clamp(4.15rem,18vw,6.35rem)] font-extrabold leading-[0.9] tracking-normal text-fg">
-          {formatTime(remainingSeconds)}
-        </strong>
+        <TimeDisplay
+          seconds={remainingSeconds}
+          className="text-[clamp(4.15rem,18vw,6.35rem)] font-extrabold leading-[0.9] tracking-normal text-fg"
+        />
         {countdownSeconds !== null && (
           <p className="m-0 mt-5 text-[clamp(1rem,4vw,1.2rem)] font-bold leading-none text-muted">
             remaining
